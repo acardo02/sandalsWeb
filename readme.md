@@ -10,7 +10,7 @@ Asegúrate de tener instalado:
 
 - **Git**
 - **Python 3.10 o superior**
-- **Node.js 18 o superior**
+- **Node.js 20 o superior**
 - **MongoDB** (local o MongoDB Atlas)
 
 Verificar versiones:

@@ -1,0 +1,19 @@
+from motor.motor_asyncio import AsyncIOMotorClient
+from beanie import init_beanie
+from app.core.config import settings
+from app.models.user_model import User
+
+client: AsyncIOMotorClient | None = None
+
+async def init_db():
+    global client
+    client = AsyncIOMotorClient(settings.MONGO_URL)
+
+    await init_beanie(
+        database=client[settings.DB_NAME],
+        document_models=[
+            User
+        ]
+    )
+
+    print("✅ MongoDB conectado correctamente")

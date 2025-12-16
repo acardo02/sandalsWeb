@@ -1,7 +1,11 @@
 from fastapi import FastAPI
+from app.db.connection import init_db
+from app.routes.users_routes import router as users_router
 
 app = FastAPI()
 
-@app.get("/")
-def root():
-    return {"status": "Backend funcionando"}
+@app.on_event("startup")
+async def startup_event():
+    await init_db()
+
+app.include_router(users_router)
