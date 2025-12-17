@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from app.db.connection import init_db
-from app.routes import users_routes, auth_routes
+from app.routes import users_routes, auth_routes, products_routes
 
 app = FastAPI()
 
@@ -10,3 +10,4 @@ async def startup_event():
 
 app.include_router(auth_routes.router, prefix="/auth", tags=["Auth"])
 app.include_router(users_routes.router, prefix="/users", tags=["Users"])
+app.include_router(products_routes.router, prefix="/products", tags=["products"])
