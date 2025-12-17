@@ -32,7 +32,7 @@
     on:click|preventDefault={handleAddToCart}
     disabled={isAdding}
   >
-    {isAdding ? 'Agregado ✓' : 'Agregar al carrito'}
+    <span>{isAdding ? 'Agregado ✓' : 'Agregar al carrito'}</span>
   </button>
 </a>
 
@@ -90,6 +90,7 @@ img {
   justify-content: center;
   opacity: 0;
   transition: opacity 0.4s ease;
+  pointer-events: none;
 }
 
 .card:hover .overlay {
@@ -104,11 +105,20 @@ img {
   border: 1px solid white;
   padding: 0.7rem 1.5rem;
   transform: translateY(10px);
-  transition: transform 0.4s ease;
+  transition: all 0.4s ease;
+  background: rgba(0, 0, 0, 0);
+  pointer-events: auto;
+  cursor: pointer;
 }
 
 .card:hover .view-details {
   transform: translateY(0);
+}
+
+.view-details:hover {
+  background: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  border-color: rgba(255, 255, 255, 0.9);
 }
 
 .info {
@@ -156,7 +166,6 @@ h3 {
   height: 100%;
   background: white;
   transition: left 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  z-index: 0;
 }
 
 .add-btn:hover:not(:disabled) {

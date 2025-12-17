@@ -75,7 +75,7 @@
         <div class="info-block">
           <h4>Redes</h4>
           <div class="social">
-            <a href="#" target="_blank">Instagram</a>
+            <a href="https://www.instagram.com/calerosv?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" target="_blank">Instagram</a>
             <a href="#" target="_blank">Facebook</a>
           </div>
         </div>
