@@ -1,12 +1,11 @@
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, Depends
 from typing import List
 from app.models.user_model import User
 from app.schemas.user_schema import UserCreate, UserResponse
 from app.core.security import get_password_hash
+from app.core.dependencies import get_current_user
 
-router = APIRouter(prefix="/users", tags=["Users"])
-
-
+router = APIRouter()
 
 @router.post("/", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 async def create_user(user: UserCreate):
@@ -17,7 +16,8 @@ async def create_user(user: UserCreate):
             status_code=400,
             detail="Este correo a esta registrado"
         )
-    hashed_password = get_password_hash(user.password)
+    
+    hashed_password = get_password_hash(password=user.password)
     user_data = user.model_dump(exclude={"password"})
     user_data["hashed_password"] = hashed_password
 
@@ -28,3 +28,7 @@ async def create_user(user: UserCreate):
 @router.get("/")
 async def get_users():
     return await User.find_all().to_list()
+
+@router.get("/me", response_model=UserResponse)
+async def read_users_me(current_user: User = Depends(get_current_user)):
+    return current_user

@@ -5,3 +5,6 @@ beanie
 pydantic-settings
 python-dotenv
 passlib
+pydantic[email]
+python-multipart
+bcrypt
