@@ -3,6 +3,7 @@ from beanie import init_beanie
 from app.core.config import settings
 from app.models.user_model import User
 from app.models.product_model import Product
+from app.models.orders_model import Order
 
 client: AsyncIOMotorClient | None = None
 
@@ -14,7 +15,8 @@ async def init_db():
         database=client[settings.DB_NAME],
         document_models=[
             User,
-            Product
+            Product,
+            Order
         ]
     )
 
