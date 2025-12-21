@@ -10,6 +10,7 @@ class ProductBase(BaseModel):
     stock: int
     sku: str
     image_url: Optional[str] = None
+    category:str
 
 class ProductCreate(ProductBase):
     pass

@@ -81,14 +81,16 @@ async def get_my_orders(current_user: User = Depends(get_current_user)):
 @router.get("/", response_model=List[OrderResponse])
 async def get_all_orders(
     status: Optional[OrderStatus] = None,
-    current_user: User = Depends(get_current_admin_user)
+    current_user: User = Depends(get_current_admin_user),
+    limit: int = 20,
+    skip: int = 0
 ):
     if status:
         orders = await Order.find(
             Order.status == status
-        ).sort(-Order.created_at).to_list()
+        ).sort(-Order.created_at).skip(skip).limit(limit).to_list()
     else:
-        orders = await Order.find_all().sort(-Order.created_at).to_list()
+        orders = await Order.find_all().sort(-Order.created_at).skip(skip).limit(limit).to_list()
 
     return orders
 

@@ -10,6 +10,7 @@ class Product(Document):
     stock: int = Field(default=0, ge=0)
     sku: Indexed(str, unique=True)
     image_url: Optional[str] = None
+    category: str = Field(default="General", max_length=50)
 
 
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))

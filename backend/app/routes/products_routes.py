@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, status, Depends
-from typing import List
+from typing import List, Optional
 from app.models.user_model import User
 from app.models.product_model import Product
 from app.schemas.product_schema import ProductCreate, ProductResponse, ProductUpdate
@@ -67,8 +67,20 @@ async def update_product(
     return product
 
 @router.get("/", response_model=List[ProductResponse])
-async def get_products():
-    return await Product.find_all().to_list()
+async def get_products(
+    category: Optional[str] = None,
+    limit: int = 20,
+    skip: int = 0
+):
+    query = Product.find_all()
+
+    if category:
+        query = Product.find(Product.category == category)
+
+    products = await query.sort(-Product.created_at).skip(skip).limit(limit).to_list()
+
+    return products
+    
 
 @router.get("/{product_id}", response_model=ProductResponse)
 async def get_product_details(product_id: str):
