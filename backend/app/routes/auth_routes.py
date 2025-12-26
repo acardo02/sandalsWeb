@@ -44,3 +44,4 @@ async def create_user(user: UserCreate):
     await new_user.create()
 
     return new_user
+

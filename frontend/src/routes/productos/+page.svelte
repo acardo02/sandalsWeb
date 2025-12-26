@@ -1,12 +1,22 @@
 <script>
   import { onMount } from 'svelte';
-  import { products } from '$lib/data/products';
+  import { products as productsApi } from '$lib/api';
   import ProductCard from '$lib/components/ProductCard.svelte';
   
+  let products = [];
+  let loading = true;
+  let error = '';
   let visible = false;
   
-  onMount(() => {
-    setTimeout(() => visible = true, 200);
+  onMount(async () => {
+    try {
+      products = await productsApi.getAll({ limit: 50 });
+    } catch (err) {
+      error = 'Error al cargar productos: ' + err.message;
+    } finally {
+      loading = false;
+      setTimeout(() => visible = true, 200);
+    }
   });
 </script>
 
@@ -17,13 +27,29 @@
     <p class="subtitle">Descubre cada pieza de nuestra selección curada</p>
   </div>
 
-  <div class="grid {visible ? 'show' : ''}">
-    {#each products as product, i}
-      <div class="product-wrapper" style="transition-delay: {i * 0.05}s">
-        <ProductCard {product} />
-      </div>
-    {/each}
-  </div>
+  {#if loading}
+    <div class="loading">
+      <div class="spinner"></div>
+      <p>Cargando productos...</p>
+    </div>
+  {:else if error}
+    <div class="error">
+      <p>{error}</p>
+      <button on:click={() => window.location.reload()}>Reintentar</button>
+    </div>
+  {:else if products.length === 0}
+    <div class="empty">
+      <p>No hay productos disponibles en este momento</p>
+    </div>
+  {:else}
+    <div class="grid {visible ? 'show' : ''}">
+      {#each products as product, i}
+        <div class="product-wrapper" style="transition-delay: {i * 0.05}s">
+          <ProductCard {product} />
+        </div>
+      {/each}
+    </div>
+  {/if}
 </section>
 
 <style>
@@ -67,6 +93,56 @@ h1 {
   opacity: 0.7;
   max-width: 600px;
   margin: 0 auto;
+}
+
+.loading,
+.error,
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  gap: 1rem;
+  text-align: center;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #000;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.error {
+  color: #c33;
+}
+
+.error button {
+  margin-top: 1rem;
+  padding: 0.8rem 2rem;
+  background: #000;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  transition: background 0.3s ease;
+}
+
+.error button:hover {
+  background: #333;
+}
+
+.empty {
+  color: #666;
 }
 
 .grid {

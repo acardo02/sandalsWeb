@@ -2,6 +2,7 @@
   import { addToCart } from '$lib/stores/cartStore';
   export let product;
   
+  const API_URL = 'http://localhost:8000';
   let isAdding = false;
   
   const handleAddToCart = () => {
@@ -12,11 +13,14 @@
       isAdding = false;
     }, 1000);
   };
+  
+  $: imageUrl = product.image_url ? `${API_URL}${product.image_url}` : product.image || '/placeholder.png';
+  $: productLink = product.id ? `/producto/${product.id}` : `/producto/${product.id}`;
 </script>
 
-<a href="/producto/{product.id}" class="card">
+<a href={productLink} class="card">
   <div class="image-wrapper">
-    <img src={product.image} alt={product.name} />
+    <img src={imageUrl} alt={product.name} />
     <div class="overlay">
       <span class="view-details">Ver detalles</span>
     </div>
@@ -24,15 +28,20 @@
 
   <div class="info">
     <h3>{product.name}</h3>
-    <p class="price">€{product.price}</p>
+    <p class="price">${product.price}</p>
+    {#if product.stock !== undefined}
+      <p class="stock-info {product.stock === 0 ? 'out-of-stock' : ''}">
+        {product.stock === 0 ? 'Agotado' : `${product.stock} disponibles`}
+      </p>
+    {/if}
   </div>
 
   <button 
     class="add-btn {isAdding ? 'adding' : ''}" 
     on:click|preventDefault={handleAddToCart}
-    disabled={isAdding}
+    disabled={isAdding || product.stock === 0}
   >
-    <span>{isAdding ? 'Agregado ✓' : 'Agregar al carrito'}</span>
+    <span>{isAdding ? 'Agregado ✓' : product.stock === 0 ? 'Agotado' : 'Agregar al carrito'}</span>
   </button>
 </a>
 
@@ -140,6 +149,16 @@ h3 {
   font-size: 0.95rem;
   font-weight: 500;
   opacity: 0.8;
+  margin-bottom: 0.3rem;
+}
+
+.stock-info {
+  font-size: 0.8rem;
+  color: #2e7d32;
+}
+
+.stock-info.out-of-stock {
+  color: #c62828;
 }
 
 .add-btn {
@@ -189,6 +208,7 @@ h3 {
 
 .add-btn:disabled {
   cursor: not-allowed;
+  opacity: 0.6;
 }
 
 @media (max-width: 768px) {

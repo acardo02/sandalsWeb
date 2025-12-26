@@ -13,16 +13,17 @@ class AddressSchema(BaseModel):
 
 class UserCreate(BaseModel):
     email: EmailStr
-    password: str = Field(..., min_length=6, description="Constraseña plana")
+    password: str = Field(..., min_length=6, description="Contraseña plana")
 
     first_name: str
     last_name: str
     phone_number: str = Field(..., description="Celular para notificaciones")
     document_id: Optional[str] = Field(None, description="DUI o NIT")
-    address:Optional[AddressSchema] = None
+    address: Optional[AddressSchema] = None
 
 class UserResponse(BaseModel):
     id: PydanticObjectId
+    email: EmailStr  # ← LÍNEA AGREGADA (IMPORTANTE)
     first_name: str
     last_name: str
     phone_number: str
