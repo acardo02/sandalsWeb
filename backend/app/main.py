@@ -1,5 +1,4 @@
 from fastapi import FastAPI
-from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from app.db.connection import init_db
 from app.routes import users_routes, auth_routes, products_routes, order_routes, upload_routes
@@ -23,7 +22,6 @@ async def startup_event():
     await init_db()
 
 
-app.mount("/static", StaticFiles(directory="static"), name="static")
 
 app.include_router(auth_routes.router, prefix="/auth", tags=["Auth"])
 app.include_router(users_routes.router, prefix="/users", tags=["Users"])

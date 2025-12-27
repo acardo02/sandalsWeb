@@ -1,25 +1,45 @@
-from fastapi import APIRouter, HTTPException, status, Depends
+from fastapi import APIRouter, HTTPException, status, Depends, Form, UploadFile, File
 from typing import List, Optional
 from app.models.user_model import User
 from app.models.product_model import Product
-from app.schemas.product_schema import ProductCreate, ProductResponse, ProductUpdate
+from app.schemas.product_schema import ProductResponse, ProductUpdate
 from app.core.dependencies import get_current_admin_user
+from app.services.image_service import upload_image
 
 router = APIRouter()
 
 @router.post("/", response_model=ProductResponse, status_code=status.HTTP_201_CREATED)
 async def create_product(
-    product_in: ProductCreate,
+    
+    name: str = Form(...),
+    description: str = Form(None),
+    price: float = Form(...),
+    stock: int = Form(...),
+    sku: str = Form(...),
+    category: str = Form("General"),
+
+    image: UploadFile = File(...),
+
     current_user: User = Depends(get_current_admin_user)
 ):
-    product_exists = await Product.find_one(Product.sku ==  product_in.sku)
+    product_exists = await Product.find_one(Product.sku == sku)
     print(product_exists)
     if product_exists:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Ya existe un producto con el SKU: {product_in.sku}"
+            detail=f"Ya existe un producto con el SKU: {sku}"
         )
-    new_product = Product(**product_in.model_dump())
+    image_url = upload_image(image)
+
+    new_product = Product(
+        name=name, 
+        description=description, 
+        price=price,
+        stock=stock,
+        sku=sku,
+        category=category,
+        image_url=image_url
+    )
     await new_product.create()
     return new_product
 
