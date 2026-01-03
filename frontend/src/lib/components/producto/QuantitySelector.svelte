@@ -1,8 +1,11 @@
 <script>
   export let quantity = 1;
+  export let maxStock = 10; // Stock máximo disponible
   
   const increaseQty = () => {
-    quantity = Math.min(quantity + 1, 10);
+    if (quantity < maxStock) {
+      quantity = quantity + 1;
+    }
   };
   
   const decreaseQty = () => {
@@ -13,10 +16,25 @@
 <div class="quantity-selector">
   <span class="qty-label">Cantidad</span>
   <div class="qty-controls">
-    <button class="qty-btn" on:click={decreaseQty}>−</button>
+    <button 
+      class="qty-btn" 
+      on:click={decreaseQty}
+      disabled={quantity <= 1}
+    >
+      −
+    </button>
     <span class="qty-value">{quantity}</span>
-    <button class="qty-btn" on:click={increaseQty}>+</button>
+    <button 
+      class="qty-btn" 
+      on:click={increaseQty}
+      disabled={quantity >= maxStock}
+    >
+      +
+    </button>
   </div>
+  {#if maxStock < 10}
+    <span class="stock-warning">Solo {maxStock} disponibles</span>
+  {/if}
 </div>
 
 <style>
@@ -25,6 +43,7 @@
   align-items: center;
   justify-content: space-between;
   margin-bottom: 2rem;
+  position: relative;
 }
 
 .qty-label {
@@ -55,13 +74,27 @@
   transition: opacity 0.3s ease;
 }
 
-.qty-btn:hover {
+.qty-btn:hover:not(:disabled) {
   opacity: 0.6;
+}
+
+.qty-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
 }
 
 .qty-value {
   font-size: 1.1rem;
   min-width: 30px;
   text-align: center;
+}
+
+.stock-warning {
+  position: absolute;
+  bottom: -1.5rem;
+  right: 0;
+  font-size: 0.75rem;
+  color: #ff6b6b;
+  font-style: italic;
 }
 </style>

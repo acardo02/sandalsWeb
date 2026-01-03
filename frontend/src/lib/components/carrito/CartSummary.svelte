@@ -9,7 +9,7 @@
   
   <div class="summary-row">
     <span>Subtotal</span>
-    <span>€{total.toFixed(2)}</span>
+    <span>${total.toFixed(2)}</span>
   </div>
   
   <div class="summary-row">
@@ -21,7 +21,7 @@
   
   <div class="summary-row total">
     <span>Total</span>
-    <span>€{total.toFixed(2)}</span>
+    <span>${total.toFixed(2)}</span>
   </div>
   
   <a href="/checkout" class="checkout-btn">
@@ -95,17 +95,18 @@ h2 {
   background: transparent;
   color: #999;
   border: 1px solid #ddd;
-  padding: 1rem;
-  font-size: 0.75rem;
-  letter-spacing: 1.5px;
+  padding: 1.3rem;
+  font-size: 0.8rem;
+  letter-spacing: 2px;
   text-transform: uppercase;
   cursor: pointer;
   transition: all 0.3s ease;
 }
 
 .clear-btn:hover {
-  color: #000;
-  border-color: #000;
+  color: #c62828;
+  border-color: #c62828;
+  background: #ffebee;
 }
 
 @media (max-width: 968px) {

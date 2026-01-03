@@ -2,15 +2,25 @@
   import { onMount } from 'svelte';
   import { products as productsApi } from '$lib/api';
   import ProductCard from '$lib/components/ProductCard.svelte';
+  import CategoryFilter from '$lib/components/CategoryFilter.svelte';
   
-  let products = [];
+  let allProducts = [];
+  let filteredProducts = [];
+  let categories = [];
+  let selectedCategory = 'Todos';
   let loading = true;
   let error = '';
   let visible = false;
   
   onMount(async () => {
     try {
-      products = await productsApi.getAll({ limit: 50 });
+      allProducts = await productsApi.getAll({ limit: 100 });
+      filteredProducts = allProducts;
+      
+      // Extraer categorías únicas de los productos
+      const uniqueCategories = [...new Set(allProducts.map(p => p.category))];
+      categories = uniqueCategories.filter(c => c); // Remover undefined/null
+      
     } catch (err) {
       error = 'Error al cargar productos: ' + err.message;
     } finally {
@@ -18,6 +28,16 @@
       setTimeout(() => visible = true, 200);
     }
   });
+
+  function handleFilterChange(category) {
+    selectedCategory = category;
+    
+    if (category === 'Todos') {
+      filteredProducts = allProducts;
+    } else {
+      filteredProducts = allProducts.filter(p => p.category === category);
+    }
+  }
 </script>
 
 <section class="productos">
@@ -37,18 +57,31 @@
       <p>{error}</p>
       <button on:click={() => window.location.reload()}>Reintentar</button>
     </div>
-  {:else if products.length === 0}
-    <div class="empty">
-      <p>No hay productos disponibles en este momento</p>
-    </div>
   {:else}
-    <div class="grid {visible ? 'show' : ''}">
-      {#each products as product, i}
-        <div class="product-wrapper" style="transition-delay: {i * 0.05}s">
-          <ProductCard {product} />
-        </div>
-      {/each}
-    </div>
+    {#if categories.length > 0}
+      <CategoryFilter 
+        {categories} 
+        {selectedCategory}
+        onFilterChange={handleFilterChange}
+      />
+    {/if}
+
+    {#if filteredProducts.length === 0}
+      <div class="empty">
+        <p>No hay productos en esta categoría</p>
+        <button class="reset-btn" on:click={() => handleFilterChange('Todos')}>
+          Ver todos los productos
+        </button>
+      </div>
+    {:else}
+      <div class="grid {visible ? 'show' : ''}">
+        {#each filteredProducts as product, i}
+          <div class="product-wrapper" style="transition-delay: {i * 0.05}s">
+            <ProductCard {product} />
+          </div>
+        {/each}
+      </div>
+    {/if}
   {/if}
 </section>
 
@@ -61,7 +94,7 @@
 
 .header {
   text-align: center;
-  margin-bottom: 6rem;
+  margin-bottom: 3rem;
   opacity: 0;
   transform: translateY(30px);
   transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);
@@ -145,6 +178,23 @@ h1 {
   color: #666;
 }
 
+.reset-btn {
+  margin-top: 1rem;
+  padding: 0.8rem 2rem;
+  background: #000;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-size: 0.85rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  transition: all 0.3s ease;
+}
+
+.reset-btn:hover {
+  background: #333;
+}
+
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -174,7 +224,7 @@ h1 {
   }
   
   .header {
-    margin-bottom: 4rem;
+    margin-bottom: 2rem;
   }
   
   .grid {

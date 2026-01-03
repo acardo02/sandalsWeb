@@ -29,11 +29,6 @@
   <div class="info">
     <h3>{product.name}</h3>
     <p class="price">${product.price}</p>
-    {#if product.stock !== undefined}
-      <p class="stock-info {product.stock === 0 ? 'out-of-stock' : ''}">
-        {product.stock === 0 ? 'Agotado' : `${product.stock} disponibles`}
-      </p>
-    {/if}
   </div>
 
   <button 
@@ -150,15 +145,6 @@ h3 {
   font-weight: 500;
   opacity: 0.8;
   margin-bottom: 0.3rem;
-}
-
-.stock-info {
-  font-size: 0.8rem;
-  color: #2e7d32;
-}
-
-.stock-info.out-of-stock {
-  color: #c62828;
 }
 
 .add-btn {

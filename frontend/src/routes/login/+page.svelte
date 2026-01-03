@@ -23,7 +23,6 @@
       error = result.error;
       loading = false;
     }
-    // Si es exitoso, el authStore maneja la redirección automáticamente
   }
 </script>
 
@@ -148,6 +147,7 @@ input {
   font-size: 1rem;
   transition: all 0.3s ease;
   font-family: inherit;
+  box-sizing: border-box;
 }
 
 input:focus {
@@ -172,6 +172,7 @@ input:disabled {
   cursor: pointer;
   transition: all 0.3s ease;
   margin-top: 1rem;
+  box-sizing: border-box;
 }
 
 .submit-btn:hover:not(:disabled) {

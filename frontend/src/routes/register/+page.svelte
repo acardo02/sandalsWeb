@@ -13,6 +13,26 @@
   let loading = false;
   let visible = false;
   let success = false;
+  let passwordErrors = [];
+
+  // Validaciones de contraseña como variables
+  $: hasMinLength = password.length >= 8;
+  $: hasUpperCase = /[A-Z]/.test(password);
+  $: hasLowerCase = /[a-z]/.test(password);
+  $: hasNumber = /[0-9]/.test(password);
+  $: hasSpecialChar = /[!@#$%^&*()_\-+=[\]{};:'",.<>?/\\|`~]/.test(password);
+
+  // Validar contraseña en tiempo real
+  $: {
+    passwordErrors = [];
+    if (password.length > 0) {
+      if (!hasMinLength) passwordErrors.push('Mínimo 8 caracteres');
+      if (!hasUpperCase) passwordErrors.push('Una letra mayúscula');
+      if (!hasLowerCase) passwordErrors.push('Una letra minúscula');
+      if (!hasNumber) passwordErrors.push('Un número');
+      if (!hasSpecialChar) passwordErrors.push('Un carácter especial');
+    }
+  }
 
   onMount(() => {
     setTimeout(() => visible = true, 100);
@@ -22,13 +42,16 @@
     e.preventDefault();
     error = '';
 
-    if (password !== confirmPassword) {
-      error = 'Las contraseñas no coinciden';
+    // Validar formato de contraseña (incluye _ - y otros caracteres especiales)
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_\-+=\[\]{};:'",.<>?/\\|`~])[A-Za-z\d!@#$%^&*()_\-+=\[\]{};:'",.<>?/\\|`~]{8,}$/;
+    
+    if (!passwordRegex.test(password)) {
+      error = 'La contraseña no cumple con los requisitos de seguridad';
       return;
     }
 
-    if (password.length < 6) {
-      error = 'La contraseña debe tener al menos 6 caracteres';
+    if (password !== confirmPassword) {
+      error = 'Las contraseñas no coinciden';
       return;
     }
 
@@ -128,9 +151,31 @@
             type="password"
             bind:value={password}
             required
-            placeholder="Mínimo 6 caracteres"
+            placeholder="Mínimo 8 caracteres"
             disabled={loading}
           />
+          {#if password.length > 0 && passwordErrors.length > 0}
+            <div class="password-requirements">
+              <p class="requirements-title">La contraseña debe tener:</p>
+              <ul>
+                <li class:valid={hasMinLength}>
+                  {hasMinLength ? '✓' : '○'} Mínimo 8 caracteres
+                </li>
+                <li class:valid={hasUpperCase}>
+                  {hasUpperCase ? '✓' : '○'} Una letra mayúscula
+                </li>
+                <li class:valid={hasLowerCase}>
+                  {hasLowerCase ? '✓' : '○'} Una letra minúscula
+                </li>
+                <li class:valid={hasNumber}>
+                  {hasNumber ? '✓' : '○'} Un número
+                </li>
+                <li class:valid={hasSpecialChar}>
+                  {hasSpecialChar ? '✓' : '○'} Un carácter especial
+                </li>
+              </ul>
+            </div>
+          {/if}
         </div>
 
         <div class="form-group">
@@ -244,6 +289,7 @@ input {
   font-size: 1rem;
   transition: all 0.3s ease;
   font-family: inherit;
+  box-sizing: border-box;
 }
 
 input:focus {
@@ -268,6 +314,7 @@ input:disabled {
   cursor: pointer;
   transition: all 0.3s ease;
   margin-top: 1rem;
+  box-sizing: border-box;
 }
 
 .submit-btn:hover:not(:disabled) {
@@ -296,6 +343,37 @@ input:disabled {
 
 .footer a:hover {
   opacity: 0.6;
+}
+
+.password-requirements {
+  margin-top: 0.8rem;
+  padding: 1rem;
+  background: #f9f9f9;
+  border-left: 3px solid #ddd;
+  font-size: 0.85rem;
+}
+
+.requirements-title {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #666;
+}
+
+.password-requirements ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.password-requirements li {
+  padding: 0.3rem 0;
+  color: #999;
+  transition: color 0.3s ease;
+}
+
+.password-requirements li.valid {
+  color: #2e7d32;
+  font-weight: 500;
 }
 
 @media (max-width: 768px) {
