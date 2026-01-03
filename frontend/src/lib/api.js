@@ -35,7 +35,24 @@ async function request(endpoint, options = {}) {
     
     if (!response.ok) {
       const error = await response.json().catch(() => ({ detail: 'Error desconocido' }));
-      throw new Error(error.detail || `Error ${response.status}`);
+      
+      // Mejorar el mensaje de error
+      let errorMessage = 'Error desconocido';
+      
+      if (error.detail) {
+        // Si detail es un array (errores de validación de Pydantic)
+        if (Array.isArray(error.detail)) {
+          errorMessage = error.detail.map(e => `${e.loc.join('.')}: ${e.msg}`).join(', ');
+        } else {
+          errorMessage = error.detail;
+        }
+      }
+      
+      console.error('Error completo del backend:', error);
+      console.error('Endpoint:', endpoint);
+      console.error('Datos enviados:', options.body);
+      
+      throw new Error(errorMessage);
     }
 
     const contentType = response.headers.get('content-type');

@@ -45,3 +45,34 @@ async def create_user(user: UserCreate):
 
     return new_user
 
+# ⚠️ DESACTIVA ESTO DESPUÉS DE CREAR TU ADMIN
+ALLOW_ADMIN_CREATION = True  # Cambia a False después de crear tu admin
+
+# 🔒 ENDPOINT TEMPORAL PARA CREAR ADMIN - DESACTÍVALO DESPUÉS
+@router.post("/register-admin", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+async def create_admin_user(user: UserCreate):
+    # Verificar si el endpoint está activado
+    if not ALLOW_ADMIN_CREATION:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="La creación de administradores está desactivada"
+        )
+    
+    # Verificar si el usuario ya existe
+    user_exists = await User.find_one(User.email == user.email)
+    if user_exists:
+        raise HTTPException(
+            status_code=400,
+            detail="Este correo ya está registrado"
+        )
+    
+    # Crear usuario con rol admin
+    hashed_password = get_password_hash(password=user.password)
+    user_data = user.model_dump(exclude={"password"})
+    user_data["hashed_password"] = hashed_password
+    user_data["role"] = "admin"
+    
+    new_user = User(**user_data)
+    await new_user.create()
+    
+    return new_user

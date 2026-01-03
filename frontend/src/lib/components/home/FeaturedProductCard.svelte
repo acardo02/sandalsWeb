@@ -1,5 +1,11 @@
-<script>
-  export let product;
+<script lang="ts">
+  // Definimos la interfaz para que TypeScript sepa qué es un producto
+  export let product: {
+    id: string;
+    name: string;
+    price: number | string;
+    image: string;
+  };
 </script>
 
 <a href="/producto/{product.id}" class="card">
@@ -17,6 +23,7 @@
 </a>
 
 <style>
+/* --- TU CSS ORIGINAL --- */
 .card {
   display: flex;
   flex-direction: column;

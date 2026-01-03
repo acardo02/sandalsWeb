@@ -51,6 +51,7 @@
     try {
       let finalImageUrl = image_url;
 
+      // Si hay imagen nueva, subirla primero
       if (imageFile) {
         uploading = true;
         const uploadResult = await upload.image(imageFile);
@@ -60,12 +61,12 @@
 
       const productData = {
         name,
-        description: description || null,
+        description: description || '',
         price: parseFloat(price),
         stock: parseInt(stock),
         sku,
         category,
-        image_url: finalImageUrl || null,
+        image_url: finalImageUrl || '',
       };
 
       const result = await onSubmit(product?.id, productData);
