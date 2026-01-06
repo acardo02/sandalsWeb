@@ -83,7 +83,7 @@
     
     <div class="container {visible ? 'show' : ''}">
       <ProductImage 
-        image={product.image_url ? `http://localhost:8000${product.image_url}` : product.image} 
+        image={product.image_url ? product.image_url : product.image} 
         name={product.name} 
       />
 

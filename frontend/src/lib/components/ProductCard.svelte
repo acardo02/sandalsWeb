@@ -2,7 +2,6 @@
   import { addToCart } from '$lib/stores/cartStore';
   export let product;
   
-  const API_URL = 'http://localhost:8000';
   let isAdding = false;
   
   const handleAddToCart = () => {
@@ -14,7 +13,7 @@
     }, 1000);
   };
   
-  $: imageUrl = product.image_url ? `${API_URL}${product.image_url}` : product.image || '/placeholder.png';
+  $: imageUrl = product.image_url ? `${product.image_url}` : '/placeholder.png';
   $: productLink = product.id ? `/producto/${product.id}` : `/producto/${product.id}`;
 </script>
 

@@ -39,7 +39,7 @@
             <tr>
               <td class="image-cell">
                 {#if product.image_url}
-                  <img src="{API_URL}{product.image_url}" alt={product.name} />
+                  <img src="{product.image_url}" alt={product.name} />
                 {:else}
                   <div class="no-image">Sin imagen</div>
                 {/if}
