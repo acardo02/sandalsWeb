@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, status, Depends, Form, UploadFile, File
+from fastapi import APIRouter, HTTPException, status, Depends
 from typing import List, Optional
 import random  # Importante para el random
 from app.models.user_model import User
@@ -12,34 +12,17 @@ router = APIRouter()
 # --- CREAR PRODUCTO ---
 @router.post("/", response_model=ProductResponse, status_code=status.HTTP_201_CREATED)
 async def create_product(
-    name: str = Form(...),
-    description: str = Form(None),
-    price: float = Form(...),
-    stock: int = Form(...),
-    sku: str = Form(...),
-    category: str = Form("General"),
-
-    image: UploadFile = File(...),
+    product_in: ProductCreate,
     current_user: User = Depends(get_current_admin_user)
 ):
-    product_exists = await Product.find_one(Product.sku == sku)
+    product_exists = await Product.find_one(Product.sku == product_in.sku)
     if product_exists:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Ya existe un producto con el SKU: {sku}"
+            detail=f"Ya existe un producto con el SKU: {product_in.sku}"
         )
     
-    image_url = upload_image(image)
-    
-    new_product = Product(
-        name=name, 
-        description=description, 
-        price=price,
-        stock=stock,
-        sku=sku,
-        category=category,
-        image_url=image_url
-    )
+    new_product = Product(**product_in.model_dump())
     await new_product.create()
     return new_product
 
