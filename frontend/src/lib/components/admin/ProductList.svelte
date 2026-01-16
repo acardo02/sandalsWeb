@@ -3,8 +3,6 @@
   export let loading = false;
   export let onEdit;
   export let onDelete;
-
-  const API_URL = 'http://localhost:8000';
 </script>
 
 <div class="product-list">
@@ -18,7 +16,7 @@
   {:else if products.length === 0}
     <div class="empty">
       <p>No hay productos registrados</p>
-      <p class="hint">Crea tu primer producto usando el botón de arriba</p>
+      <p class="hint">Crea tu primer producto usando el boton de arriba</p>
     </div>
   {:else}
     <div class="table-wrapper">
@@ -27,10 +25,10 @@
           <tr>
             <th>Imagen</th>
             <th>Nombre</th>
-            <th>SKU</th>
+            <th>Categoria</th>
             <th>Precio</th>
             <th>Stock</th>
-            <th>Categoría</th>
+            <th>Tallas</th>
             <th>Acciones</th>
           </tr>
         </thead>
@@ -38,8 +36,8 @@
           {#each products as product}
             <tr>
               <td class="image-cell">
-                {#if product.image_url}
-                  <img src="{API_URL}{product.image_url}" alt={product.name} />
+                {#if product.main_image || (product.images && product.images.length > 0)}
+                  <img src={product.main_image || product.images[0]} alt={product.name} />
                 {:else}
                   <div class="no-image">Sin imagen</div>
                 {/if}
@@ -47,22 +45,28 @@
               <td>
                 <strong>{product.name}</strong>
                 {#if product.description}
-                  <p class="description">{product.description.slice(0, 60)}...</p>
+                  <p class="description">{product.description.slice(0, 50)}...</p>
                 {/if}
               </td>
-              <td><code>{product.sku}</code></td>
-              <td class="price">${product.price.toFixed(2)}</td>
+              <td>{product.category}</td>
+              <td class="price">${product.base_price?.toFixed(2) || '0.00'}</td>
               <td>
-                <span class="stock {product.stock === 0 ? 'out-of-stock' : ''}">
-                  {product.stock}
+                <span class="stock {product.total_stock === 0 ? 'out-of-stock' : ''}">
+                  {product.total_stock || 0}
                 </span>
               </td>
-              <td>{product.category}</td>
+              <td class="sizes">
+                {#if product.variants && product.variants.length > 0}
+                  {product.variants.map(v => v.size).join(', ')}
+                {:else}
+                  -
+                {/if}
+              </td>
               <td class="actions">
-                <button class="btn-edit" on:click={() => onEdit(product)}>
+                <button type="button" class="btn-edit" on:click={() => onEdit(product)}>
                   Editar
                 </button>
-                <button class="btn-delete" on:click={() => onDelete(product.id)}>
+                <button type="button" class="btn-delete" on:click={() => onDelete(product.id)}>
                   Eliminar
                 </button>
               </td>
@@ -186,13 +190,6 @@ td strong {
   margin: 0;
 }
 
-code {
-  background: #f5f5f5;
-  padding: 0.2rem 0.5rem;
-  border-radius: 2px;
-  font-size: 0.85rem;
-}
-
 .price {
   font-weight: 600;
   font-size: 1rem;
@@ -211,6 +208,12 @@ code {
 .stock.out-of-stock {
   background: #ffebee;
   color: #c62828;
+}
+
+.sizes {
+  font-size: 0.85rem;
+  color: #666;
+  max-width: 150px;
 }
 
 .actions {

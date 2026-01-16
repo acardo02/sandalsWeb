@@ -2,29 +2,28 @@
   import { onMount } from 'svelte';
   import ProductCard from '$lib/components/ProductCard.svelte';
   import CategoryFilter from '$lib/components/CategoryFilter.svelte';
-  
+  import { debounce } from '$lib/utils/debounce';
+
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
   let products = [];
   let categories = [];
   let selectedCategory = 'Todos';
   let searchTerm = '';
-  
+
   // Control de estado
-  let isFirstLoad = true; // Nueva variable para controlar solo la primera vez
+  let isFirstLoad = true;
   let error = '';
   let visible = false;
-  let searchTimeout;
 
   async function fetchProducts() {
-    // ELIMINADO: loading = true; 
-    // Ya no bloqueamos la pantalla al buscar.
-    
     try {
-      let url = `http://127.0.0.1:8000/products/?limit=100`;
-      
+      let url = `${API_URL}/products/?limit=100`;
+
       if (selectedCategory !== 'Todos') {
         url += `&category=${encodeURIComponent(selectedCategory)}`;
       }
-      
+
       if (searchTerm) {
         url += `&search=${encodeURIComponent(searchTerm)}`;
       }
@@ -32,7 +31,7 @@
       const res = await fetch(url);
       if (res.ok) {
         products = await res.json();
-        
+
         if (categories.length === 0) {
            const unique = [...new Set(products.map(p => p.category))];
            categories = unique.filter(c => c);
@@ -43,13 +42,15 @@
     } catch (err) {
       error = 'Error de conexión: ' + err.message;
     } finally {
-      // Solo desactivamos el loader si era la primera carga
       if (isFirstLoad) {
         isFirstLoad = false;
         setTimeout(() => visible = true, 100);
       }
     }
   }
+
+  // Debounced search
+  const debouncedSearch = debounce(fetchProducts, 300);
 
   onMount(() => {
     fetchProducts();
@@ -61,10 +62,7 @@
   }
 
   function handleSearchInput() {
-    clearTimeout(searchTimeout);
-    searchTimeout = setTimeout(() => {
-      fetchProducts();
-    }, 300); // Bajamos un poco el tiempo para que se sienta más ágil
+    debouncedSearch();
   }
 </script>
 

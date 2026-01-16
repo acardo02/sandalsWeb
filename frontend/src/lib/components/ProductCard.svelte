@@ -1,26 +1,59 @@
 <script>
   import { addToCart } from '$lib/stores/cartStore';
   export let product;
-  
-  const API_URL = 'http://localhost:8000';
+
   let isAdding = false;
-  
+  let errorMessage = '';
+
+  // Calcular stock total (productos simples o con variantes)
+  $: totalStock = product.total_stock ?? product.stock ?? 0;
+  $: isOutOfStock = totalStock <= 0;
+
   const handleAddToCart = () => {
-    isAdding = true;
-    addToCart(product);
-    
-    setTimeout(() => {
+    // Validar stock antes de agregar
+    if (isOutOfStock) {
+      errorMessage = 'Producto agotado';
+      return;
+    }
+
+    // Si tiene variantes, redirigir a detalle del producto
+    if (product.has_variants) {
+      window.location.href = `/producto/${product.id}`;
+      return;
+    }
+
+    try {
+      isAdding = true;
+      addToCart({
+        ...product,
+        price: product.base_price || product.price
+      }, 1);
+      errorMessage = '';
+
+      setTimeout(() => {
+        isAdding = false;
+      }, 1000);
+    } catch (error) {
+      errorMessage = error.message;
       isAdding = false;
-    }, 1000);
+    }
   };
-  
-  $: imageUrl = product.image_url ? `${API_URL}${product.image_url}` : product.image || '/placeholder.png';
-  $: productLink = product.id ? `/producto/${product.id}` : `/producto/${product.id}`;
+
+  // Usar main_image o el primer elemento de images
+  $: imageUrl = product.main_image || (product.images && product.images[0]) || '/placeholder.png';
+  $: productLink = `/producto/${product.id}`;
+  $: displayPrice = product.base_price ?? product.price ?? 0;
 </script>
 
 <a href={productLink} class="card">
   <div class="image-wrapper">
-    <img src={imageUrl} alt={product.name} />
+    <img
+      src={imageUrl}
+      alt={product.name}
+      loading="lazy"
+      width="300"
+      height="390"
+    />
     <div class="overlay">
       <span class="view-details">Ver detalles</span>
     </div>
@@ -28,15 +61,15 @@
 
   <div class="info">
     <h3>{product.name}</h3>
-    <p class="price">${product.price}</p>
+    <p class="price">${displayPrice.toFixed(2)}</p>
   </div>
 
-  <button 
-    class="add-btn {isAdding ? 'adding' : ''}" 
+  <button
+    class="add-btn {isAdding ? 'adding' : ''}"
     on:click|preventDefault={handleAddToCart}
-    disabled={isAdding || product.stock === 0}
+    disabled={isAdding || isOutOfStock}
   >
-    <span>{isAdding ? 'Agregado ✓' : product.stock === 0 ? 'Agotado' : 'Agregar al carrito'}</span>
+    <span>{isAdding ? 'Agregado ✓' : isOutOfStock ? 'Agotado' : product.has_variants ? 'Ver opciones' : 'Agregar al carrito'}</span>
   </button>
 </a>
 

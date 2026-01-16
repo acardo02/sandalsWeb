@@ -1,7 +1,8 @@
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, field_validator
 from typing import Optional
 from beanie import PydanticObjectId
 from datetime import datetime
+import re
 
 
 class AddressSchema(BaseModel):
@@ -13,13 +14,41 @@ class AddressSchema(BaseModel):
 
 class UserCreate(BaseModel):
     email: EmailStr
-    password: str = Field(..., min_length=6, description="Contraseña plana")
+    password: str = Field(..., min_length=8, description="Contraseña plana (mínimo 8 caracteres)")
 
     first_name: str
     last_name: str
     phone_number: str = Field(..., description="Celular para notificaciones")
     document_id: Optional[str] = Field(None, description="DUI o NIT")
     address: Optional[AddressSchema] = None
+
+    @field_validator('password')
+    @classmethod
+    def validate_password_strength(cls, v: str) -> str:
+        """
+        Valida que la contraseña cumpla con requisitos de seguridad:
+        - Mínimo 8 caracteres
+        - Al menos una letra mayúscula
+        - Al menos una letra minúscula
+        - Al menos un número
+        - Al menos un carácter especial
+        """
+        if len(v) < 8:
+            raise ValueError('La contraseña debe tener mínimo 8 caracteres')
+
+        if not re.search(r'[A-Z]', v):
+            raise ValueError('La contraseña debe contener al menos una letra mayúscula')
+
+        if not re.search(r'[a-z]', v):
+            raise ValueError('La contraseña debe contener al menos una letra minúscula')
+
+        if not re.search(r'\d', v):
+            raise ValueError('La contraseña debe contener al menos un número')
+
+        if not re.search(r'[!@#$%^&*()_\-+=\[\]{};:\'",.<>?/\\|`~]', v):
+            raise ValueError('La contraseña debe contener al menos un carácter especial')
+
+        return v
 
 class UserResponse(BaseModel):
     id: PydanticObjectId

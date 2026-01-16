@@ -55,13 +55,27 @@ async function request(endpoint, options = {}) {
       throw new Error(errorMessage);
     }
 
+    // Si es 204 No Content, no hay body que parsear
+    if (response.status === 204) {
+      return null;
+    }
+
     const contentType = response.headers.get('content-type');
     if (contentType && contentType.includes('application/json')) {
       return await response.json();
     }
-    
+
     return null;
   } catch (error) {
+    // Manejar error de red o token expirado
+    if (error.message.includes('No se pudieron validar las credenciales') ||
+        error.message.includes('401')) {
+      // Token expirado, limpiar y redirigir
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('token');
+        window.location.href = '/login';
+      }
+    }
     console.error('API Error:', error);
     throw error;
   }
@@ -102,6 +116,13 @@ export const auth = {
   async getMe() {
     return request('/users/me');
   },
+
+  async updateProfile(profileData) {
+    return request('/users/me', {
+      method: 'PATCH',
+      body: JSON.stringify(profileData),
+    });
+  },
 };
 
 // ==================== PRODUCTS ====================
@@ -114,6 +135,22 @@ export const products = {
 
   async getById(id) {
     return request(`/products/${id}`, { skipAuth: true });
+  },
+
+  async getVariants(id) {
+    return request(`/products/${id}/variants`, { skipAuth: true });
+  },
+
+  async getVariantDetails(productId, variantSku) {
+    return request(`/products/${productId}/variant/${variantSku}`, { skipAuth: true });
+  },
+
+  async getFeatured(limit = 8) {
+    return request(`/products/featured?limit=${limit}`, { skipAuth: true });
+  },
+
+  async getCategories() {
+    return request('/products/categories', { skipAuth: true });
   },
 
   async create(productData) {
@@ -147,8 +184,13 @@ export const orders = {
     });
   },
 
-  async getMyOrders() {
-    return request('/orders/me');
+  async getMyOrders(params = {}) {
+    const query = new URLSearchParams(params).toString();
+    return request(`/orders/me?${query}`);
+  },
+
+  async getById(orderId) {
+    return request(`/orders/${orderId}`);
   },
 
   async getAll(params = {}) {
@@ -156,11 +198,34 @@ export const orders = {
     return request(`/orders/?${query}`);
   },
 
-  async updateStatus(orderId, status) {
+  async createPaymentLink(orderId) {
+    return request(`/orders/${orderId}/payment-link`, {
+      method: 'POST',
+    });
+  },
+
+  async cancel(orderId) {
+    return request(`/orders/${orderId}/cancel`, {
+      method: 'POST',
+    });
+  },
+
+  async updateStatus(orderId, statusData) {
     return request(`/orders/${orderId}/status`, {
       method: 'PATCH',
-      body: JSON.stringify({ status }),
+      body: JSON.stringify(statusData),
     });
+  },
+
+  async updateShipping(orderId, shippingData) {
+    return request(`/orders/${orderId}/shipping`, {
+      method: 'PATCH',
+      body: JSON.stringify(shippingData),
+    });
+  },
+
+  async getStats() {
+    return request('/orders/stats/summary');
   },
 };
 
@@ -186,5 +251,132 @@ export const upload = {
     }
 
     return await response.json();
+  },
+};
+
+// ==================== COUPONS ====================
+
+export const coupons = {
+  async validate(code, subtotal) {
+    return request('/coupons/validate', {
+      method: 'POST',
+      body: JSON.stringify({ code, subtotal }),
+    });
+  },
+
+  // Admin endpoints
+  async create(couponData) {
+    return request('/coupons/', {
+      method: 'POST',
+      body: JSON.stringify(couponData),
+    });
+  },
+
+  async getAll(params = {}) {
+    const query = new URLSearchParams(params).toString();
+    return request(`/coupons/?${query}`);
+  },
+
+  async update(code, couponData) {
+    return request(`/coupons/${code}`, {
+      method: 'PATCH',
+      body: JSON.stringify(couponData),
+    });
+  },
+
+  async delete(code) {
+    return request(`/coupons/${code}`, {
+      method: 'DELETE',
+    });
+  },
+
+  async deactivate(code) {
+    return request(`/coupons/${code}/deactivate`, {
+      method: 'POST',
+    });
+  },
+};
+
+// ==================== REVIEWS ====================
+
+export const reviews = {
+  async getByProduct(productId, params = {}) {
+    const query = new URLSearchParams(params).toString();
+    return request(`/reviews/product/${productId}?${query}`, { skipAuth: true });
+  },
+
+  async getProductSummary(productId) {
+    return request(`/reviews/product/${productId}/summary`, { skipAuth: true });
+  },
+
+  async create(reviewData) {
+    return request('/reviews/', {
+      method: 'POST',
+      body: JSON.stringify(reviewData),
+    });
+  },
+
+  async getMyReviews(params = {}) {
+    const query = new URLSearchParams(params).toString();
+    return request(`/reviews/my-reviews?${query}`);
+  },
+
+  async update(reviewId, reviewData) {
+    return request(`/reviews/${reviewId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(reviewData),
+    });
+  },
+
+  async delete(reviewId) {
+    return request(`/reviews/${reviewId}`, {
+      method: 'DELETE',
+    });
+  },
+
+  async markHelpful(reviewId) {
+    return request(`/reviews/${reviewId}/helpful`, {
+      method: 'POST',
+    });
+  },
+};
+
+// ==================== WISHLIST ====================
+
+export const wishlist = {
+  async get() {
+    return request('/wishlist/');
+  },
+
+  async getProducts() {
+    return request('/wishlist/products');
+  },
+
+  async add(productId) {
+    return request(`/wishlist/add/${productId}`, {
+      method: 'POST',
+    });
+  },
+
+  async remove(productId) {
+    return request(`/wishlist/remove/${productId}`, {
+      method: 'DELETE',
+    });
+  },
+
+  async toggle(productId) {
+    return request(`/wishlist/toggle/${productId}`, {
+      method: 'POST',
+    });
+  },
+
+  async check(productId) {
+    return request(`/wishlist/check/${productId}`);
+  },
+
+  async clear() {
+    return request('/wishlist/clear', {
+      method: 'DELETE',
+    });
   },
 };
